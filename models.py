@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Float
 from database import Base
 
 class Product(Base):
@@ -6,3 +6,5 @@ class Product(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     category = Column(String)
+    price = Column(Float)
+    stock = Column(Integer)

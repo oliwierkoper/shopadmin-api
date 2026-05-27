@@ -18,7 +18,9 @@ def home():
 @app.get("/products")
 def products(db: Session = Depends(get_db)):
     products = db.query(models.Product).order_by(models.Product.id).all()
-    return products
+    if products:
+        return products
+    return return_alert("error","no products found")
 @app.post("/products")
 def add_product(product: schemas.Product, db: Session = Depends(get_db)):
     new_product = models.Product(
@@ -47,3 +49,9 @@ def patch_product(product_id: int, new_product: schemas.Product, db: Session = D
         db.refresh(product)
         return return_alert("message","product patched")
     return return_alert("error","no such product")
+@app.get("/products/low-stock")
+def low_stock(db: Session = Depends(get_db)):
+    products = db.query(models.Product).filter(models.Product.stock <= 3).order_by(models.Product.id).all()
+    if products:
+        return products
+    return return_alert("error","no products found")
