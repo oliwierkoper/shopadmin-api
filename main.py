@@ -36,5 +36,14 @@ def del_product(product_id: int, db: Session = Depends(get_db)):
         db.delete(product)
         db.commit()
         return return_alert("message","product deleted")
-    else:
-        return return_alert("error","no such product")
+    return return_alert("error","no such product")
+@app.patch("/products/{product_id}")
+def patch_product(product_id: int, new_product: schemas.Product, db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if product:
+        product.name = new_product.name
+        product.category = new_product.category
+        db.commit()
+        db.refresh(product)
+        return return_alert("message","product patched")
+    return return_alert("error","no such product")
