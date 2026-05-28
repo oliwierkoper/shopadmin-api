@@ -1,57 +1,11 @@
-from fastapi import FastAPI, Depends
-from database import engine, Base, get_db
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
+from database import engine, Base
 import models
-import schemas
+from routers import products
 
 app = FastAPI()
 
+app.include_router(products.router)
+
 Base.metadata.create_all(bind=engine)
 
-def return_alert(type,alert):
-    return {type: alert}
-
-@app.get("/")
-def home():
-    return {"message":"api works"}
-
-@app.get("/products")
-def products(db: Session = Depends(get_db)):
-    products = db.query(models.Product).order_by(models.Product.id).all()
-    if products:
-        return products
-    return return_alert("error","no products found")
-@app.post("/products")
-def add_product(product: schemas.Product, db: Session = Depends(get_db)):
-    new_product = models.Product(
-        name = product.name,
-        category = product.category
-    )
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
-    return new_product
-@app.delete("/products/{product_id}")
-def del_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(models.Product).filter(models.Product.id == product_id).first()
-    if product:
-        db.delete(product)
-        db.commit()
-        return return_alert("message","product deleted")
-    return return_alert("error","no such product")
-@app.patch("/products/{product_id}")
-def patch_product(product_id: int, new_product: schemas.Product, db: Session = Depends(get_db)):
-    product = db.query(models.Product).filter(models.Product.id == product_id).first()
-    if product:
-        product.name = new_product.name
-        product.category = new_product.category
-        db.commit()
-        db.refresh(product)
-        return return_alert("message","product patched")
-    return return_alert("error","no such product")
-@app.get("/products/low-stock")
-def low_stock(db: Session = Depends(get_db)):
-    products = db.query(models.Product).filter(models.Product.stock <= 3).order_by(models.Product.id).all()
-    if products:
-        return products
-    return return_alert("error","no products found")
