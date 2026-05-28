@@ -13,7 +13,15 @@ def return_alert(type,alert):
 def products(db: Session = Depends(get_db)):
     products = db.query(models.Product).order_by(models.Product.id).all()
     if products:
-        return products
+        return [
+            {
+                "name": product.name,
+                "category": product.category.name,
+                "price": product.price,
+                "stock": product.stock
+            }
+            for product in products
+        ]
     return return_alert("error","no products found")
 @router.post("/products")
 def add_product(product: schemas.Product, db: Session = Depends(get_db)):
