@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter
-from database import engine, Base, get_db
+from database import get_db
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -19,7 +19,9 @@ def products(db: Session = Depends(get_db)):
 def add_product(product: schemas.Product, db: Session = Depends(get_db)):
     new_product = models.Product(
         name = product.name,
-        category = product.category
+        category_id = product.category_id,
+        price = product.price,
+        stock = product.stock
     )
     db.add(new_product)
     db.commit()
@@ -38,7 +40,9 @@ def patch_product(product_id: int, new_product: schemas.Product, db: Session = D
     product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if product:
         product.name = new_product.name
-        product.category = new_product.category
+        product.category_id = new_product.category_id
+        product.price = new_product.price
+        product.stock = new_product.stock
         db.commit()
         db.refresh(product)
         return return_alert("message","product patched")
